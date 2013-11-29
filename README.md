@@ -7,9 +7,7 @@ code-publish
 
 依赖：
 
-1、php-ssh
-
-2、php-svn
+php-ssh php-svn
 
 从PHP的官方网站下载编译即可！
 
