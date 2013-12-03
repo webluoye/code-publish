@@ -3,7 +3,7 @@ code-publish
 
 代码发布系统 PHP版
 
-本项目的静态文件来源于 C2online https://github.com/soone/c2online
+本项目的静态文件和python 代码(bin文件夹)来源于 C2online https://github.com/soone/c2online
 
 依赖：
 
