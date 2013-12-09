@@ -61,7 +61,7 @@ class Server:
 					if os.path.isfile('%s/%s' % (self.curSource, line[1])):
 						os.system('cp %s/%s %s/%s' % (self.curSource, line[1], self.wwwDir, line[1]))
 				else:
-					if os.path.isdir('%s/%s' % (self.wwwDir, line[1]) or os.path.isfile('%s/%s' % (self.wwwDir, line[1]) or os.path.isfile())):
+					if os.path.isdir('%s/%s' % (self.wwwDir, line[1])) or os.path.isfile('%s/%s' % (self.wwwDir, line[1])):
 						os.system('rm -rf %s/%s' % (self.wwwDir, line[1]))
 
 			return True
