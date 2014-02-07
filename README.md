@@ -7,7 +7,11 @@ code-publish
 
 依赖：
 
-php-ssh php-svn
+php-ssh2 http://pecl.php.net/package/ssh2
+
+php-svn http://pecl.php.net/package/svn
+
+Archive Tar http://pear.php.net/manual/zh/package.filesystem.archive-tar.php
 
 从PHP的官方网站下载编译即可！
 
