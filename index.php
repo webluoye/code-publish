@@ -3,8 +3,8 @@
 Plugin Name: 代码发布系统
 Plugin URI: http://ciphp.com
 Description: 代码发布系统 for wordpress
-Version: 1.0
-Author: zougc
+Version: 1.2
+Author: logiz
 Author URI: http://ciphp.com
  */
 define("CODE_URL", plugins_url('', __FILE__));
@@ -26,6 +26,7 @@ add_action('wp_ajax_changeServer', array('CodeAction', 'changeServer'));
 //
 add_action('wp_ajax_createProject', array('CodeAction', 'createProject'));
 add_action('wp_ajax_changeProject', array('CodeAction', 'changeProject'));
+add_action('wp_ajax_updatePassword', array('CodeAction', 'updatePassword'));
 add_action('wp_ajax_packageList', array('CodeAction', 'packageList'));
 add_action('wp_ajax_createPackage', array('CodeAction', 'createPackage'));
 add_action('wp_ajax_getPackageList', array('CodeAction', 'getPackageList'));

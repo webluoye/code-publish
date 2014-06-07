@@ -256,10 +256,23 @@ class CodeAction
 		exit;
 	}
 
+	private static function writeLog($content=false)
+	{
+		$id = session_id();
+		if(empty($id))
+		{
+			session_start();
+		}
+		list($usec, $sec) = explode(" ", microtime());
+		$data= session_id()."_".((float)$usec + (float)$sec)."_".$content;
+		file_put_contents(ABSPATH.'/wp-content/uploads/log.log', $data."\n",FILE_APPEND);
+	}
+	
 	private static function optionPackageLib($runtimeInfo, $serverInfo, $sendVer, $pid, $opAction, $versionId)
 	{
 		global $wpdb;
 		echo "<br/>开始连接服务器<br/>";
+		self::writeLog($pid.'_start conn server');
 		$ssh = new CodeSshLib($serverInfo->s_host, $serverInfo->s_user, $serverInfo->s_pass);
 		try
 		{
@@ -273,6 +286,7 @@ class CodeAction
 			if('actioning' == $opAction)
 			{
 				echo "开始上传文件到目标服务器<br/>";
+				self::writeLog($pid.'_start upload file');
 				foreach($sendVer as $v)
 				{
 					$tarfile = CODE_PATH . '/packdir/' . $pid . '/' . $v . '.tar.gz';
@@ -288,6 +302,7 @@ class CodeAction
 					}
 				}
 				echo "开始执行服务器命令<br/>";
+				self::writeLog($pid.'_start python command release.py');
 				echo "开始发布" . implode(' ', $sendVer) . "包<br/>";
 				$msg = $ssh->execCommand('cd ' . $runtimeInfo->r_bdir . '/bin; python release.py "' . implode(' ', $sendVer) . '" ' . $runtimeInfo->r_bdir . ' ' . $runtimeInfo->r_pdir);
 
@@ -295,10 +310,12 @@ class CodeAction
 			else
 			{
 				echo "开始执行服务器命令<br/>";
+				self::writeLog($pid.'_start python command rollback.py');
 				echo "开始回滚" . implode(' ', $sendVer) . "包<br/>";
 				$msg = $ssh->execCommand('cd ' . $runtimeInfo->r_bdir . '/bin; python rollback.py "' . implode(' ', $sendVer) . '" ' . $runtimeInfo->r_bdir . ' ' . $runtimeInfo->r_pdir);
 				$resultStatus = 4;
 			}
+			self::writeLog($pid.'_command complate');
 			echo '服务端操作信息<br/>' . nl2br($msg['msg']);
 			if(empty($msg['error']))
 			{
@@ -308,10 +325,12 @@ class CodeAction
 			{
 				echo '错误信息<br/>' . nl2br($msg['error']);
 			}
+			self::writeLog($pid.'_update database');
 			foreach(explode(',', $versionId) as $v)
 			{
 				$publishLog->addLog($pid, $runtimeInfo->s_id, $v, 'actioning' == $opAction ? 1 : 2);
 			}
+			self::writeLog($pid.'_over');
 		}
 		catch(Exception $e)
 		{
@@ -341,6 +360,7 @@ class CodeAction
 					throw new Exception($version . '版本号已经存在');
 				}
 				$cvsFile = explode('|', $vals);
+				self::writeLog($pro.'_start create path');
 				$result = self::createPackageLib($proInfo, $version, $cvsFile, $pro);
 				if(true !== $result)
 				{
@@ -354,11 +374,13 @@ class CodeAction
 					{
 						$codeComDbLib = new CodeCommonDbLib();
 						$rid = $wpdb->insert_id;
+						self::writeLog($pro.'_start add file log');
 						foreach($cvsFile as $f)
 						{
 							$fileArr = explode('::', $f);
 							$codeComDbLib->addFileLog($rid, $fileArr[1], $fileArr[2], $fileArr[0]);
 						}
+						self::writeLog($pro.'_add file log over');
 						self::showMsg('', 1);
 					}
 					self::showMsg('写入发布包记录失败');
@@ -381,6 +403,7 @@ class CodeAction
 			return "svn checkout 失败";
 		}
 		$successCount = 0;
+		self::writeLog($pro.'_svn checkout success');
 		foreach($okFileList as $v)
 		{
 			$fileArr = explode('::', $v);
@@ -400,12 +423,14 @@ class CodeAction
 				$successCount++;
 			}
 		}
+		self::writeLog($pro.'_get svn file info over');
 		if($successCount != count($okFileList))
 		{
 			rmdir(CODE_PATH . '/' . $target);
 			return "export failed (export file num:" . $successCount . "/" . count($okFileList) . ") 请重试！";
 		}
-		$package->rrmdir(CODE_PATH . $svn->getCheckoutPath());
+		//$package->rrmdir(CODE_PATH . $svn->getCheckoutPath());
+		self::writeLog($pro.'_start add file to folder');
 		if(!$package->createSendPackage($okFileList))
 		{
 			return 'ready to create bin backup folder error' . "\n";
@@ -415,10 +440,13 @@ class CodeAction
 		{
 			return "create dir " . $projectDir . ' failed';
 		}
+		self::writeLog($pro.'_create packdir and start create gz file');
 		$tarFile = $target . '.tar.gz';
 		$gzip = new Codegzip(CODE_PATH . './' . $target . '/', $projectDir . $tarFile);
 		$gzip->createGzFile();
+		self::writeLog($pro.'_create gz file success');
 		$package->rrmdir(CODE_PATH . '/' . $target);
+		self::writeLog($pro.'create send package success');
 		return true;
 	}
 
@@ -470,7 +498,26 @@ class CodeAction
 		echo json_encode($data);
 		exit;
 	}
-
+	
+	public static function updatePassword()
+	{
+		$name = $_POST['name'];
+		$id = intval($_POST['id']);
+		$val = trim($_POST['val']);
+		$data = array('res' => 1);
+		global $wpdb;
+		if($val && $id && $name)
+		{
+			$sql = "update wp_c2_project set p_pass ='" . $val . "' where p_id=" . $id;
+			if(false === $wpdb->query($sql))
+			{
+				$data['res'] = 0;
+				$data['msg'] = '更新SVN密码执行失败' . $sql;
+			}
+		}
+		echo json_encode($data);
+		exit;
+	}
 	public static function changeProject()
 	{
 		$checkboxs = $_POST['checkboxs'];

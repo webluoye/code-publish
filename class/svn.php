@@ -18,9 +18,20 @@ class CodeSvnLib
 
 	public function checkout()
 	{
-		$this->localPath = mt_rand(100000, 999999);
+		$result = false;
+		$this->localPath = '/source/' . md5($this->svnPath);
 		setlocale(LC_ALL, 'zh_CN.UTF-8');
-		return svn_checkout($this->svnPath, CODE_PATH . $this->localPath);
+		if(file_exists(CODE_PATH . $this->localPath) && is_dir(CODE_PATH . $this->localPath))
+		{
+			svn_cleanup(CODE_PATH . $this->localPath);
+			$result = svn_update(CODE_PATH. $this->localPath);
+		}
+		else
+		{
+			$result = svn_checkout($this->svnPath, CODE_PATH . $this->localPath);
+		}
+		@chmod(CODE_PATH . $this->localPath, 0777);
+		return $result;
 	}
 
 	public function getCheckoutPath()

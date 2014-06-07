@@ -63,7 +63,7 @@ define(function(require, exports, module){
 			}
 
 			var p = id.split('_');
-			std.getJson('post', '/project/update/', {name: p[1], id: p[2], val: val}, function(data){
+			std.getJson('post', ajaxurl, {name: p[1], id: p[2], val: val,action:'updatePassword'}, function(data){
 				if(!data['res'])
 					std.alertErrorBox('tlist', data['msg']);
 				else
