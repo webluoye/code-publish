@@ -1,14 +1,14 @@
 <?php
-
 class CodeAction
 {
+
 	public static function addMenu()
 	{
-		add_menu_page('代码发布系统', '代码发布系统', 'administrator', 'publishcode', array('CodeBase', 'base'), '');
-		add_submenu_page('publishcode', '服务器管理', '服务器管理', 'administrator', 'publishcode', array('CodeBase', 'base'));
-		add_submenu_page('publishcode', '项目管理', '项目管理', '0', 'project', array('CodeBase', 'project'));
-		add_submenu_page('publishcode', '运行环境管理', '运行环境管理', 'administrator', 'runtime', array('CodeBase', 'runtime'));
-		add_submenu_page('publishcode', '权限管理', '权限管理', 'administrator', 'access', array('CodeBase', 'access'));
+		add_menu_page('代码发布系统', '代码发布系统', 'administrator', 'publishcode', array('CodeBase','base'), '');
+		add_submenu_page('publishcode', '服务器管理', '服务器管理', 'administrator', 'publishcode', array('CodeBase','base'));
+		add_submenu_page('publishcode', '项目管理', '项目管理', '0', 'project', array('CodeBase','project'));
+		add_submenu_page('publishcode', '运行环境管理', '运行环境管理', 'administrator', 'runtime', array('CodeBase','runtime'));
+		add_submenu_page('publishcode', '权限管理', '权限管理', 'administrator', 'access', array('CodeBase','access'));
 	}
 
 	public static function handleError($errno, $errstr, $errfile, $errline, array $errcontext)
@@ -40,7 +40,7 @@ class CodeAction
 			$data['server'] = $serverList;
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function createRuntime()
@@ -59,7 +59,9 @@ class CodeAction
 		else
 		{
 			$sql = "insert into wp_c2_runtime(p_id,s_id,r_pdir,r_bdir,r_name,r_status,r_cdateline)values(
-				'" . intval($pid) . "','" . intval($sid) . "','" . $pdir . "','" . $bdir . "','" . $rname . "',1,'" . time() . "')";
+				'" .
+				 intval($pid) . "','" . intval($sid) . "','" . $pdir . "','" . $bdir . "','" . $rname . "',1,'" . time() .
+				 "')";
 			global $wpdb;
 			if(!$wpdb->query($sql))
 			{
@@ -68,7 +70,7 @@ class CodeAction
 			}
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function changeRuntime()
@@ -85,7 +87,7 @@ class CodeAction
 			$data['msg'] = '更新SQL执行失败' . $sql;
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function getRuntimeList()
@@ -106,7 +108,7 @@ class CodeAction
 		}
 		$data['list'] = $runtimeList;
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function updateRuntime()
@@ -123,7 +125,7 @@ class CodeAction
 			$data['msg'] = '更新SQL执行失败';
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function createProject()
@@ -134,22 +136,26 @@ class CodeAction
 		$vcspass = trim($_POST['vcspass']);
 		$data = array('res' => 0);
 		global $wpdb;
-		if($wpdb->get_var("select p_id from wp_c2_project where p_vcspath='".$vcs."'")){
-			$data['msg'] = $vcs."已经存在!";
+		if($wpdb->get_var("select p_id from wp_c2_project where p_vcspath='" . $vcs . "'"))
+		{
+			$data['msg'] = $vcs . "已经存在!";
 		}
-		else{
+		else
+		{
 			$sql = "insert into wp_c2_project(p_name,p_vcspath,p_user,p_pass,p_status,p_cdateline)values(
-					'" . $pname . "','" . $vcs . "','" . $vcsuser . "','" . $vcspass . "',1,'" . time() . "')";		
+					'" . $pname . "','" . $vcs .
+				 "','" . $vcsuser . "','" . $vcspass . "',1,'" . time() . "')";
 			if(!$wpdb->query($sql))
 			{
 				$data['msg'] = '创建项目SQL执行失败';
 			}
-			else{
+			else
+			{
 				$data['res'] = 1;
 			}
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function getPackageList()
@@ -158,7 +164,9 @@ class CodeAction
 		$page = intval($_POST['page']);
 		global $wpdb;
 		$data = array('res' => 1);
-		$result = $wpdb->get_results("select * from wp_c2_revision where p_id=" . $pid . " order by r_id desc limit " . (($page - 1) * 20) . ', 20');
+		$result = $wpdb->get_results(
+			"select * from wp_c2_revision where p_id=" . $pid . " order by r_id desc limit " . (($page - 1) * 20) .
+				 ', 20');
 		if(!$result)
 		{
 			$data['res'] = 0;
@@ -171,7 +179,7 @@ class CodeAction
 			$data['maxPage'] = ceil($wpdb->get_var("select count(*) from  wp_c2_revision where p_id=" . $pid) / 20);
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function deletePackage()
@@ -179,7 +187,8 @@ class CodeAction
 		$op = trim($_GET['op']);
 		$opArr = explode('/', $op);
 		global $wpdb;
-		$result = $wpdb->query("update wp_c2_revision set r_status=" . ($opArr[0] == 2 ? '3' : 1) . " where r_id=" . $opArr[1]);
+		$result = $wpdb->query(
+			"update wp_c2_revision set r_status=" . ($opArr[0] == 2? '3' :1) . " where r_id=" . $opArr[1]);
 		$data = array('res' => 1);
 		if(!$result)
 		{
@@ -191,7 +200,7 @@ class CodeAction
 			$data['res'] = 1;
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function packdetail()
@@ -210,7 +219,7 @@ class CodeAction
 			$data['list'] = $detail;
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function optionPackage()
@@ -220,7 +229,7 @@ class CodeAction
 		if(4 != count($opArr))
 		{
 			echo '参数错误';
-			exit;
+			exit();
 		}
 		flush();
 		$opAction = $opArr[0];
@@ -232,31 +241,31 @@ class CodeAction
 		if(!$runtimeInfo)
 		{
 			echo "不存在的运行环境配置";
-			exit;
+			exit();
 		}
 		$serverInfo = $wpdb->get_row("select s_host,s_user,s_pass from wp_c2_server where s_id=" . $runtimeInfo->s_id);
 		if(!$serverInfo)
 		{
 			echo "运行环境配置的服务器信息不存在";
-			exit;
+			exit();
 		}
 		$verInfo = $wpdb->get_results("select r_no,r_cdateline from wp_c2_revision where r_id in (" . $versionId . ")");
 		if(!$verInfo)
 		{
 			echo "要发布的包信息不存在";
-			exit;
+			exit();
 		}
 		$sendVer = array();
 		foreach($verInfo as $v)
 		{
 			$sendVer[$v->r_no] = $v->r_cdateline;
 		}
-		'actioning' == $opAction ? asort($sendVer) : arsort($sendVer);
+		'actioning' == $opAction? asort($sendVer) :arsort($sendVer);
 		self::optionPackageLib($runtimeInfo, $serverInfo, array_keys($sendVer), $pid, $opAction, $versionId);
-		exit;
+		exit();
 	}
 
-	private static function writeLog($content=false)
+	private static function writeLog($content = false)
 	{
 		$id = session_id();
 		if(empty($id))
@@ -264,73 +273,78 @@ class CodeAction
 			session_start();
 		}
 		list($usec, $sec) = explode(" ", microtime());
-		$data= session_id()."_".((float)$usec + (float)$sec)."_".$content;
-		file_put_contents(ABSPATH.'/wp-content/uploads/log.log', $data."\n",FILE_APPEND);
+		$data = session_id() . "_" . ((float)$usec + (float)$sec) . "_" . $content;
+		file_put_contents(ABSPATH . '/wp-content/uploads/log.log', $data . "\n", FILE_APPEND);
 	}
-	
+
 	private static function optionPackageLib($runtimeInfo, $serverInfo, $sendVer, $pid, $opAction, $versionId)
 	{
 		global $wpdb;
 		echo "<br/>开始连接服务器<br/>";
-		self::writeLog($pid.'_start conn server');
+		self::writeLog($pid . '_start conn server');
 		$ssh = new CodeSshLib($serverInfo->s_host, $serverInfo->s_user, $serverInfo->s_pass);
 		try
 		{
 			if(!$conn = $ssh->connection())
 			{
 				echo "服务器连接失败" . $serverInfo->s_host . ':' . $serverInfo->s_user . "\n";
-				exit;
+				exit();
 			}
 			$resultStatus = 3;
 			$publishLog = new CodePublishLog(get_current_user_id());
 			if('actioning' == $opAction)
 			{
 				echo "开始上传文件到目标服务器<br/>";
-				self::writeLog($pid.'_start upload file');
+				self::writeLog($pid . '_start upload file');
 				foreach($sendVer as $v)
 				{
 					$tarfile = CODE_PATH . '/packdir/' . $pid . '/' . $v . '.tar.gz';
 					if(!file_exists($tarfile))
 					{
 						echo "上传文件 " . $v . ".tar.gz 文件不存在 流程终止<br/>";
-						exit;
+						exit();
 					}
 					if(!$ssh->sendFile($tarfile, $runtimeInfo->r_bdir . $v . '.tar.gz'))
 					{
 						echo "上传文件 " . $v . ".tar.gz 到目标服务器失败<br/>";
-						exit;
+						exit();
 					}
 				}
 				echo "开始执行服务器命令<br/>";
-				self::writeLog($pid.'_start python command release.py');
+				self::writeLog($pid . '_start python command release.py');
 				echo "开始发布" . implode(' ', $sendVer) . "包<br/>";
-				$msg = $ssh->execCommand('cd ' . $runtimeInfo->r_bdir . '/bin; python release.py "' . implode(' ', $sendVer) . '" ' . $runtimeInfo->r_bdir . ' ' . $runtimeInfo->r_pdir);
-
+				$msg = $ssh->execCommand(
+					'cd ' . $runtimeInfo->r_bdir . '/bin; python release.py "' . implode(' ', $sendVer) . '" ' .
+						 $runtimeInfo->r_bdir . ' ' . $runtimeInfo->r_pdir);
 			}
 			else
 			{
 				echo "开始执行服务器命令<br/>";
-				self::writeLog($pid.'_start python command rollback.py');
+				self::writeLog($pid . '_start python command rollback.py');
 				echo "开始回滚" . implode(' ', $sendVer) . "包<br/>";
-				$msg = $ssh->execCommand('cd ' . $runtimeInfo->r_bdir . '/bin; python rollback.py "' . implode(' ', $sendVer) . '" ' . $runtimeInfo->r_bdir . ' ' . $runtimeInfo->r_pdir);
+				$msg = $ssh->execCommand(
+					'cd ' . $runtimeInfo->r_bdir . '/bin; python rollback.py "' . implode(' ', $sendVer) . '" ' .
+						 $runtimeInfo->r_bdir . ' ' . $runtimeInfo->r_pdir);
 				$resultStatus = 4;
 			}
-			self::writeLog($pid.'_command complate');
+			self::writeLog($pid . '_command complate');
 			echo '服务端操作信息<br/>' . nl2br($msg['msg']);
 			if(empty($msg['error']))
 			{
-				$wpdb->query("update wp_c2_revision set r_status=" . $resultStatus . ",r_dateline='" . time() . "',s_id=" . $runtimeInfo->s_id . ",s_name='" . $runtimeInfo->r_name . "' where r_id in(" . $versionId . ")");
+				$wpdb->query(
+					"update wp_c2_revision set r_status=" . $resultStatus . ",r_dateline='" . time() . "',s_id=" .
+						 $runtimeInfo->s_id . ",s_name='" . $runtimeInfo->r_name . "' where r_id in(" . $versionId . ")");
 			}
 			else
 			{
 				echo '错误信息<br/>' . nl2br($msg['error']);
 			}
-			self::writeLog($pid.'_update database');
+			self::writeLog($pid . '_update database');
 			foreach(explode(',', $versionId) as $v)
 			{
-				$publishLog->addLog($pid, $runtimeInfo->s_id, $v, 'actioning' == $opAction ? 1 : 2);
+				$publishLog->addLog($pid, $runtimeInfo->s_id, $v, 'actioning' == $opAction? 1 :2);
 			}
-			self::writeLog($pid.'_over');
+			self::writeLog($pid . '_over');
 		}
 		catch(Exception $e)
 		{
@@ -349,8 +363,11 @@ class CodeAction
 			global $wpdb;
 			try
 			{
-				$lastVer = $wpdb->get_var("select r_no from wp_c2_revision where p_id=" . $pro . " and r_no='" . $version . "' order by r_id desc limit 1");
-				$proInfo = $wpdb->get_row("select p_vcspath,p_user,p_pass from wp_c2_project where p_status=1 and p_id=" . $pro);
+				$lastVer = $wpdb->get_var(
+					"select r_no from wp_c2_revision where p_id=" . $pro . " and r_no='" . $version .
+						 "' order by r_id desc limit 1");
+				$proInfo = $wpdb->get_row(
+					"select p_vcspath,p_user,p_pass from wp_c2_project where p_status=1 and p_id=" . $pro);
 				if(!$proInfo)
 				{
 					throw new Exception($version . '不存在的项目');
@@ -360,7 +377,7 @@ class CodeAction
 					throw new Exception($version . '版本号已经存在');
 				}
 				$cvsFile = explode('|', $vals);
-				self::writeLog($pro.'_start create path');
+				self::writeLog($pro . '_start create path');
 				$result = self::createPackageLib($proInfo, $version, $cvsFile, $pro);
 				if(true !== $result)
 				{
@@ -368,19 +385,21 @@ class CodeAction
 				}
 				else
 				{
-					$revResult = $wpdb->query("insert into wp_c2_revision(p_id,r_no,s_id,s_name,r_dateline,r_cdateline,r_status)values('" . $pro . "',
+					$revResult = $wpdb->query(
+						"insert into wp_c2_revision(p_id,r_no,s_id,s_name,r_dateline,r_cdateline,r_status)values('" .
+							 $pro . "',
 								'" . $version . "','','','','" . time() . "','1')");
 					if($revResult)
 					{
 						$codeComDbLib = new CodeCommonDbLib();
 						$rid = $wpdb->insert_id;
-						self::writeLog($pro.'_start add file log');
+						self::writeLog($pro . '_start add file log');
 						foreach($cvsFile as $f)
 						{
 							$fileArr = explode('::', $f);
 							$codeComDbLib->addFileLog($rid, $fileArr[1], $fileArr[2], $fileArr[0]);
 						}
-						self::writeLog($pro.'_add file log over');
+						self::writeLog($pro . '_add file log over');
 						self::showMsg('', 1);
 					}
 					self::showMsg('写入发布包记录失败');
@@ -403,13 +422,13 @@ class CodeAction
 			return "svn checkout 失败";
 		}
 		$successCount = 0;
-		self::writeLog($pro.'_svn checkout success');
+		self::writeLog($pro . '_svn checkout success');
 		foreach($okFileList as $v)
 		{
 			$fileArr = explode('::', $v);
 			if('D' == strtoupper($fileArr[1]))
 			{
-				$successCount++;
+				$successCount ++;
 				continue;
 			}
 			$toFile = CODE_PATH . '/' . $target . '/source/' . $fileArr[2];
@@ -420,17 +439,17 @@ class CodeAction
 			}
 			if($svn->export($fileArr[2], $toFile, $fileArr[0]))
 			{
-				$successCount++;
+				$successCount ++;
 			}
 		}
-		self::writeLog($pro.'_get svn file info over');
+		self::writeLog($pro . '_get svn file info over');
 		if($successCount != count($okFileList))
 		{
 			rmdir(CODE_PATH . '/' . $target);
 			return "export failed (export file num:" . $successCount . "/" . count($okFileList) . ") 请重试！";
 		}
-		//$package->rrmdir(CODE_PATH . $svn->getCheckoutPath());
-		self::writeLog($pro.'_start add file to folder');
+		// $package->rrmdir(CODE_PATH . $svn->getCheckoutPath());
+		self::writeLog($pro . '_start add file to folder');
 		if(!$package->createSendPackage($okFileList))
 		{
 			return 'ready to create bin backup folder error' . "\n";
@@ -440,13 +459,13 @@ class CodeAction
 		{
 			return "create dir " . $projectDir . ' failed';
 		}
-		self::writeLog($pro.'_create packdir and start create gz file');
+		self::writeLog($pro . '_create packdir and start create gz file');
 		$tarFile = $target . '.tar.gz';
 		$gzip = new Codegzip(CODE_PATH . './' . $target . '/', $projectDir . $tarFile);
 		$gzip->createGzFile();
-		self::writeLog($pro.'_create gz file success');
+		self::writeLog($pro . '_create gz file success');
 		$package->rrmdir(CODE_PATH . '/' . $target);
-		self::writeLog($pro.'create send package success');
+		self::writeLog($pro . 'create send package success');
 		return true;
 	}
 
@@ -465,7 +484,8 @@ class CodeAction
 			else
 			{
 				global $wpdb;
-				$proInfo = $wpdb->get_row("select p_vcspath,p_user,p_pass from wp_c2_project where p_status=1 and p_id=" . $pro);
+				$proInfo = $wpdb->get_row(
+					"select p_vcspath,p_user,p_pass from wp_c2_project where p_status=1 and p_id=" . $pro);
 				if(!$proInfo)
 				{
 					$data['msg'] = '不存在的项目';
@@ -482,11 +502,17 @@ class CodeAction
 					$okFile = array();
 					foreach($okFileList as $k => $v)
 					{
-						$okFile[$v['rev']][] = array('a' => $v['action'], 'f' => str_replace($SvnPrefixPath, '', $k));
+						$fValue = str_replace($SvnPrefixPath, '', $k);
+						if(empty($fValue))
+						{
+							continue;
+						}
+						$okFile[$v['rev']][] = array('a' => $v['action'],'f' => $fValue);
 					}
 					unset($file);
 					$data['logs'] = $okFile;
-					$data['lastVersion'] = $wpdb->get_var("select r_no from wp_c2_revision where p_id=" . $pro . " order by r_id desc limit 1");
+					$data['lastVersion'] = $wpdb->get_var(
+						"select r_no from wp_c2_revision where p_id=" . $pro . " order by r_id desc limit 1");
 				}
 			}
 		}
@@ -496,9 +522,9 @@ class CodeAction
 			$data['msg'] = $e->getMessage();
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
-	
+
 	public static function updatePassword()
 	{
 		$name = $_POST['name'];
@@ -516,8 +542,9 @@ class CodeAction
 			}
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
+
 	public static function changeProject()
 	{
 		$checkboxs = $_POST['checkboxs'];
@@ -532,7 +559,7 @@ class CodeAction
 			$data['msg'] = '更新SQL执行失败' . $sql;
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function changeServer()
@@ -549,7 +576,7 @@ class CodeAction
 			$data['msg'] = '更新SQL执行失败' . $sql;
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function updateServer()
@@ -566,7 +593,7 @@ class CodeAction
 			$data['msg'] = '更新SQL执行失败';
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	public static function createServer()
@@ -574,18 +601,22 @@ class CodeAction
 		$spath = $_POST['spath'];
 		$suser = $_POST['suser'];
 		$spass = $_POST['spass'];
-		$svpn = isset($_POST['svpn']) ? trim($_POST['svpn']) : '';
-		$vpnname = isset($_POST['vpnname']) ? trim($_POST['vpnname']) : '';
-		$vpnpass = isset($_POST['vpnpass']) ? trim($_POST['vpnpass']) : '';
+		$svpn = isset($_POST['svpn'])? trim($_POST['svpn']) :'';
+		$vpnname = isset($_POST['vpnname'])? trim($_POST['vpnname']) :'';
+		$vpnpass = isset($_POST['vpnpass'])? trim($_POST['vpnpass']) :'';
 		global $wpdb;
 		$data = array('res' => 1);
-		if($wpdb->get_var("select s_id from wp_c2_server where s_host='".$spath."'")){
+		if($wpdb->get_var("select s_id from wp_c2_server where s_host='" . $spath . "'"))
+		{
 			$data['res'] = 0;
-			$data['msg'] = '服务器'.$spath."已经存在!";
+			$data['msg'] = '服务器' . $spath . "已经存在!";
 		}
-		else{
+		else
+		{
 			$sql = "insert into wp_c2_server(s_host,s_user,s_pass,s_vpn,s_vpnuser,s_vpnpass,s_vpnpro,s_status,s_cdateline)values(
-				'" . $spath . "','" . $suser . "','" . $spass . "','" . $svpn . "','" . $vpnname . "','" . $vpnpass . "',1,1,'" . time() . "')";
+				'" .
+				 $spath . "','" . $suser . "','" . $spass . "','" . $svpn . "','" . $vpnname . "','" . $vpnpass .
+				 "',1,1,'" . time() . "')";
 			if(!$wpdb->query($sql))
 			{
 				$data['res'] = 0;
@@ -593,7 +624,7 @@ class CodeAction
 			}
 		}
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 
 	private static function showMsg($msg, $result = 0, array $data = array())
@@ -601,6 +632,6 @@ class CodeAction
 		$data['res'] = $result;
 		$data['msg'] = $msg;
 		echo json_encode($data);
-		exit;
+		exit();
 	}
 }
