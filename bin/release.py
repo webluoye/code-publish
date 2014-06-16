@@ -2,6 +2,7 @@
 #!-*-coding:utf-8-*-
 import os
 import sys
+import shutil
 FILELOG = 'files.log'
 PRESHELL = 'pre.sh'
 class Server:
@@ -57,7 +58,8 @@ class Server:
 					lineDir = line[1][0:line[1].rindex('/')]
 					if os.path.isdir('%s/%s' % (self.wwwDir, lineDir)) is False:
 						os.system('mkdir -p %s/%s' % (self.wwwDir, lineDir))
-
+					if line[0] == 'A':
+						self.dirCopyTree(self.curSource + '/' + lineDir, self.wwwDir + '/' + lineDir)
 					if os.path.isfile('%s/%s' % (self.curSource, line[1])):
 						os.system('cp %s/%s %s/%s' % (self.curSource, line[1], self.wwwDir, line[1]))
 				else:
@@ -74,6 +76,22 @@ class Server:
 		os.system('tar zcvf %s/%s.tar.gz -C %s/%s ./' % (self.relDir, self.verNo, self.relDir, self.verNo))
 		os.system('rm -rf %s/%s' % (self.relDir, self.verNo))
 		return True
+
+	def dirCopyTree(self, src, dst):
+		names = os.listdir(src)
+		# 目标文件夹不存在，则新建
+		if not os.path.exists(dst):
+			os.mkdir(dst)
+		# 遍历源文件夹中的文件与文件夹
+		for name in names:
+			srcname = os.path.join(src, name)
+			dstname = os.path.join(dst, name)
+			# 是文件夹则递归调用本拷贝函数，否则直接拷贝文件
+			if os.path.isdir(srcname):                
+				self.dirCopyTree(srcname, dstname)
+			else:
+				if (not os.path.exists(dstname) or ((os.path.exists(dstname)) and (os.path.getsize(dstname) != os.path.getsize(srcname)))):
+					shutil.copy2(srcname, dst)
 
 def usage():
 	print 'Usage:python release.py 2.0.15.r8888 /data/server/a0b923820dcc509a /data/wwwV2'
